@@ -1,0 +1,148 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------
+   Design tokens. Every colour, font and motion value used by the site
+   is defined here; components refer to these through Tailwind classes
+   (bg-ink, text-paper, border-line, font-mono …).
+   ------------------------------------------------------------------ */
+@theme {
+  --color-ink: #0c0d0f;          /* page background */
+  --color-ink-2: #121417;        /* raised surfaces */
+  --color-ink-3: #191c20;        /* hover / inset surfaces */
+  --color-line: #24272c;         /* hairline borders */
+  --color-line-2: #34383f;       /* stronger borders */
+  --color-paper: #efebe3;        /* primary text (warm white) */
+  --color-mute: #a8a49c;         /* secondary text */
+  --color-faint: #8a867e;        /* tertiary text, meets AA on ink */
+  --color-signal: #c8f04a;       /* the single accent: electric lime */
+  --color-signal-dim: #c8f04a26;
+
+  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --breakpoint-xs: 30rem;
+}
+
+@layer base {
+  html {
+    background: var(--color-ink);
+    color-scheme: dark;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-sans);
+    font-feature-settings: 'ss01', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  a { text-underline-offset: 0.2em; }
+}
+
+/* ------------------------------------------------------------------
+   Utilities that Tailwind does not express well.
+   ------------------------------------------------------------------ */
+@utility container-x {
+  width: 100%;
+  max-width: 82rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  @media (width >= 40rem) { padding-inline: 2rem; }
+  @media (width >= 64rem) { padding-inline: 3rem; }
+}
+
+/* A faint measured grid used behind the hero and section intros. */
+@utility blueprint {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+/* Crop marks on framed images: four L-shaped corners drawn with gradients. */
+@utility cropmarks {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--color-signal), var(--color-signal)) top left / 14px 1px,
+      linear-gradient(var(--color-signal), var(--color-signal)) top left / 1px 14px,
+      linear-gradient(var(--color-signal), var(--color-signal)) top right / 14px 1px,
+      linear-gradient(var(--color-signal), var(--color-signal)) top right / 1px 14px,
+      linear-gradient(var(--color-signal), var(--color-signal)) bottom left / 14px 1px,
+      linear-gradient(var(--color-signal), var(--color-signal)) bottom left / 1px 14px,
+      linear-gradient(var(--color-signal), var(--color-signal)) bottom right / 14px 1px,
+      linear-gradient(var(--color-signal), var(--color-signal)) bottom right / 1px 14px;
+    background-repeat: no-repeat;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Motion. Reveals are progressive enhancement: content is visible by
+   default and only hidden once JS has marked the document as ready.
+   ------------------------------------------------------------------ */
+.js-motion [data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.8s var(--ease-out-quart),
+    transform 0.8s var(--ease-out-quart);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.js-motion [data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Starts at a near-zero (not zero) opacity so browsers still count the hero as
+   painted for Largest Contentful Paint; visually identical to a fade from 0. */
+@keyframes rise {
+  from { opacity: 0.01; transform: translateY(0.6em); }
+  to { opacity: 1; transform: none; }
+}
+.hero-line {
+  animation: rise 0.9s var(--ease-out-quart) both;
+  animation-delay: var(--d, 0ms);
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(200 240 74 / 0.5); }
+  50% { box-shadow: 0 0 0 6px rgb(200 240 74 / 0); }
+}
+.status-dot { animation: pulse-dot 2.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .js-motion [data-reveal] { opacity: 1; transform: none; }
+}
